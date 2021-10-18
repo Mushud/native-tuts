@@ -13,12 +13,11 @@ export default function App() {
     <View style={{ flex: 1 }}>
       <NavigationContainer>
         <MainNavigator.Navigator
-          screenOptions={{ headerShown: true ,  }}
+          screenOptions={{ headerShown: false }}
           // initialRouteName=""
         >
           <MainNavigator.Screen name="Login" component={Login} />
           <MainNavigator.Screen name="Home" component={Home} />
-         
         </MainNavigator.Navigator>
       </NavigationContainer>
     </View>

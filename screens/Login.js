@@ -1,78 +1,161 @@
 import React from "react";
-import { View, Text, Image, TextInput, TouchableOpacity } from "react-native";
-import { AntDesign } from "@expo/vector-icons";
+import {
+  View,
+  Text,
+  Image,
+  TextInput,
+  TouchableOpacity,
+  Button,
+  StatusBar,
+  FlatList,
+  RefreshControl,
+} from "react-native";
+import { AntDesign, Ionicons } from "@expo/vector-icons";
+import { useState } from "react";
+import { useEffect } from "react";
 
 export default function Login(params) {
-  const navigation = params.navigation;
+  const [weatherData, setWeatherData] = useState();
+  StatusBar.setBarStyle("light-content");
+
+  async function getWeather(city = "London") {
+    fetch(
+      `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=be34bce58d100edcccbd5177b4b4dc89`
+    )
+      .then((response) => response.json())
+      .then((response) => {
+        setWeatherData(response);
+        console.log(response);
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  }
+
+  const weatherImage = [
+    { weather: "overcast clouds", img: require("../assets/clouds.png") },
+    { weather: "broken clouds", img: require("../assets/cloudy.png") },
+    { weather: "few clouds", img: require("../assets/cloudy-day.png") },
+    { weather: "clear sky", img: require("../assets/cloudy-day.png") },
+  ];
+  
+  const cities = ["Accra", "Kumasi", "London", "Florida", "Abidjan"];
+
+  function FTC(temp) {
+    return temp - 273.15;
+  }
+
+  useEffect(() => {
+    getWeather();
+  }, []);
+
   return (
     <View
       style={{
-        backgroundColor: "white",
+        backgroundColor: "#19172b",
         flex: 1,
+        paddingTop: 55,
         paddingHorizontal: 20,
-        justifyContent: "center",
-        alignItems: "center",
       }}
     >
-      <Image
+      <View
         style={{
-          transform: [{ rotate: "45deg" }],
-          borderRadius: 20,
-          marginBottom: 60,
-          width: 200,
+          borderRadius: 25,
+          backgroundColor: "#211f30",
+          padding: 20,
           height: 200,
         }}
-        source={{
-          uri: "https://images.unsplash.com/photo-1633114127188-99b4dd741180?ixid=MnwxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1470&q=80",
-        }}
-      />
-      <Text style={{ fontSize: 30, color: "grey" }}>Welcome to</Text>
-      <Text style={{ fontSize: 40, fontWeight: "bold" }}>Power Bike Shop</Text>
-      {/* <View style={{}}>
-        <TextInput
-          style={{
-            padding: 15,
-            borderRadius: 10,
-            borderWidth: 0.7,
-            paddingHorizontal: 60,
-          }}
-          placeholder="Enter your username"
-        />
-      </View> */}
-      {/* <View style={{ marginTop: 10,}}>
-        <TextInput
-          secureTextEntry={true}
-          onChangeText={(
-            e
-          )=> {
-            console.log(e)
-          }}
-          style={{
-            padding: 15,
-            borderRadius: 10,
-            borderWidth: 0.7,
-            paddingHorizontal: 60,
-          }}
-          placeholder="Enter your password"
-        />
-      </View> */}
-      <TouchableOpacity
-        onPress={() => {
-          navigation.navigate("Home");
-        }}
-        style={{
-          padding: 15,
-          paddingHorizontal: 80,
-          marginTop: 10,
-          alignItems: "center",
-          borderRadius: 10,
-          flexDirection: "row",
-          backgroundColor: "black",
-        }}
       >
-        <AntDesign name="apple1" size={24} color="white" />
-        <Text style={{ paddingLeft: 10, color: "white" }}>Login</Text>
-      </TouchableOpacity>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <Text style={{ color: "white", fontSize: 30 }}>Today</Text>
+          <View>
+            <Text style={{ color: "white" }}>{new Date().toDateString()}</Text>
+            <Text style={{ color: "grey", textTransform: "capitalize" }}>
+              {weatherData?.weather[0].description}
+            </Text>
+          </View>
+        </View>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <Text style={{ color: "white", fontSize: 70 }}>
+            {FTC(weatherData?.main.temp).toFixed(1)}
+            <Text style={{ color: "orange", fontSize: 40 }}>C</Text>
+          </Text>
+          <Image
+            style={{ width: 100, height: 100, marginRight: 20 }}
+            source={
+              weatherImage.find(
+                (item) => weatherData?.weather[0].description === item?.weather
+              )?.img
+            }
+          />
+        </View>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+          }}
+        >
+          <Ionicons name="location-outline" color="white" />
+          <Text style={{ color: "white", paddingLeft: 10 }}>
+            {weatherData?.name}
+          </Text>
+        </View>
+      </View>
+      <FlatList
+        data={cities}
+        ListEmptyComponent={
+          <View>
+            <Text style={{ color: "white" }}>Nothing here</Text>
+          </View>
+        }
+        contentContainerStyle={{ paddingTop: 20 }}
+        refreshControl={
+          <RefreshControl
+            tintColor="white"
+            onRefresh={() => {}}
+            refreshing={false}
+          />
+        }
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            onPress={() => {
+              getWeather(item);
+            }}
+            style={{
+              padding: 20,
+              borderRadius: 10,
+              backgroundColor: "#211f30",
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: 10,
+            }}
+          >
+            <Text style={{ color: "white" }}>{item}</Text>
+            <Ionicons
+              name={
+                item === weatherData?.name
+                  ? "radio-button-on"
+                  : "radio-button-off"
+              }
+              size={18}
+              color="white"
+            />
+          </TouchableOpacity>
+        )}
+      />
     </View>
   );
 }
